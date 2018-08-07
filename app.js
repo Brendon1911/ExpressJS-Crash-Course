@@ -50,6 +50,16 @@ app.get("/", (req, res) => {
   });
 });
 
+app.post("/users/add", (req, res) => {
+  let newUser = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email
+  }
+
+  console.log(newUser);
+});
+
 app.listen(3000, () => {
   console.log("Server started on Port 3000...");
 });
