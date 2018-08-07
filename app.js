@@ -1,7 +1,11 @@
 const express           = require("express"),
       bodyParser        = require("body-parser"),
       path              = require("path"),
-      expressValidator  = require("express-validator");
+      expressValidator  = require("express-validator"),
+      mongojs           = require("mongojs");
+
+const ObjectId = mongojs.ObjectId;
+const db = mongojs("mongodb://brendon:password123@ds123259.mlab.com:23259/express_js-crash-course", ["users"]);
 
 const app = express();
 
@@ -32,31 +36,13 @@ app.use((req, res, next) => {
 // express validator middleware
 app.use(expressValidator());
 
-let users = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "johndoe@gmail.com"
-  },
-  {
-    id: 2,
-    firstName: "Bob",
-    lastName: "Smith",
-    email: "bobsmith@gmail.com"
-  },
-  {
-    id: 3,
-    firstName: "Jill",
-    lastName: "Jackson",
-    email: "jilljackson@gmail.com"
-  }
-]
-
 app.get("/", (req, res) => {
-  res.render("index", { 
-    title: "Customers",
-    users: users
+  db.users.find((err, docs) => {
+    console.log(docs);
+    res.render("index", { 
+      title: "Customers",
+      users: docs
+    });
   });
 });
 
@@ -79,8 +65,24 @@ app.post("/users/add", (req, res) => {
       lastName: req.body.lastName,
       email: req.body.email
     }
-    console.log("Success!");
+    db.users.insert(newUser, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.redirect("/");
+      }
+    });
   }
+});
+
+app.delete("/users/delete/:id", (req, res) => {
+  db.users.remove({_id: ObjectId(req.params.id)}, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.redirect("/");
+    }
+  });
 });
 
 app.listen(3000, () => {
